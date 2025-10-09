@@ -4,7 +4,7 @@ import '../../index.css';
 import styles from './app.module.css';
 
 import { AppHeader } from '../app-header';
-import { ConstructorPage } from '@pages';
+import { ConstructorPage, Feed } from '@pages';
 import { Modal } from '@components';
 import { IngredientDetails } from '@components';
 import { Preloader } from '@ui';
@@ -65,6 +65,7 @@ const App = () => {
       <Routes location={background || location}>
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/ingredients/:id' element={<IngredientDetails />} />
+        <Route path='/feed' element={<Feed />} />
         {/* при необходимости: другие страницы позже */}
       </Routes>
 
