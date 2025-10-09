@@ -59,17 +59,16 @@ const App = () => {
 
   return (
     <div className={styles.app}>
-      <AppHeader />
+      <div className={styles.headerWrap}>
+        <AppHeader />
+      </div>
 
-      {/* если есть background — рисуем страницу "под модалкой" */}
       <Routes location={background || location}>
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/ingredients/:id' element={<IngredientDetails />} />
         <Route path='/feed' element={<Feed />} />
-        {/* при необходимости: другие страницы позже */}
       </Routes>
 
-      {/* модалка поверх, если мы пришли со списка и в state лежит background */}
       {background && (
         <Routes>
           <Route
