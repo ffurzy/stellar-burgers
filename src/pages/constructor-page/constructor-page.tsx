@@ -1,5 +1,4 @@
-// src/pages/constructor-page/constructor-page.tsx
-import { useAppDispatch, useAppSelector } from '../../services/store';
+import { useDispatch, useSelector } from '../../services/store';
 import styles from './constructor-page.module.css';
 import { BurgerIngredients } from '../../components';
 import { BurgerConstructor } from '../../components';
@@ -14,10 +13,10 @@ import {
 } from '../../services/slices/ingredientsSlice';
 
 export const ConstructorPage: FC = () => {
-  const dispatch = useAppDispatch();
-  const ingredients = useAppSelector(selectIngredients);
-  const loading = useAppSelector(selectIngredientsLoading);
-  const error = useAppSelector(selectIngredientsError);
+  const dispatch = useDispatch();
+  const ingredients = useSelector(selectIngredients);
+  const loading = useSelector(selectIngredientsLoading);
+  const error = useSelector(selectIngredientsError);
 
   useEffect(() => {
     dispatch(fetchIngredients());
