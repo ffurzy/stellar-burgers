@@ -1,13 +1,16 @@
-import { ConstructorPage } from '@pages';
-import '../../index.css';
+import { FC } from 'react';
 import styles from './app.module.css';
+import { Routes, Route } from 'react-router-dom';
 
-import { AppHeader } from '@components';
+import { AppHeader } from '../app-header';
+import { ConstructorPage } from '../../pages/constructor-page/constructor-page';
 
-const App = () => (
+const App: FC = () => (
   <div className={styles.app}>
     <AppHeader />
-    <ConstructorPage />
+    <Routes>
+      <Route path='/' element={<ConstructorPage />} />
+    </Routes>
   </div>
 );
 
