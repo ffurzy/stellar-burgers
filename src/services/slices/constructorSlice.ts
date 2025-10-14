@@ -88,3 +88,9 @@ export const selectCounters = createSelector(selectConstructor, (c) => {
   c.ingredients.forEach((i) => (map[i._id] = (map[i._id] ?? 0) + 1));
   return map;
 });
+
+export const selectConstructorBun = (state: RootState) =>
+  state.burgerConstructor.bun;
+export const selectConstructorIngredients = (state: RootState) =>
+  state.burgerConstructor.ingredients;
+export const { resetConstructor: clearConstructor } = constructorSlice.actions;

@@ -1,37 +1,25 @@
 import { FC, useEffect } from 'react';
 import { useDispatch, useSelector } from '../../services/store';
-import { Preloader } from '@ui';
 import { FeedUI } from '@ui-pages';
-import {
-  fetchFeeds,
-  selectFeedOrders,
-  selectFeedLoading,
-  selectFeedError
-} from '../../services/slices/feedSlice';
+import { fetchFeeds } from '../../services/slices/feedSlice';
+import { Preloader } from '@ui';
 
 export const Feed: FC = () => {
   const dispatch = useDispatch();
-  const orders = useSelector(selectFeedOrders);
-  const isLoading = useSelector(selectFeedLoading);
-  const error = useSelector(selectFeedError);
+
+  const { orders, isLoading, error } = useSelector((state) => state.feed);
 
   useEffect(() => {
     dispatch(fetchFeeds());
   }, [dispatch]);
 
-  const handleGetFeeds = () => dispatch(fetchFeeds());
+  const handleGetFeeds = () => {
+    dispatch(fetchFeeds());
+  };
 
-  if (isLoading && orders.length === 0) return <Preloader />;
-  if (error)
-    return (
-      <div className='text text_type_main-default mt-10 ml-10'>
-        Ошибка: {error}
-      </div>
-    );
-  if (orders.length === 0)
-    return (
-      <div className='text text_type_main-default mt-10 ml-10'>Нет заказов</div>
-    );
+  if (isLoading && !orders.length) return <Preloader />;
+  if (error) return <div>Ошибка: {error}</div>;
+  if (!orders.length) return <div>Нет доступных заказов</div>;
 
   return <FeedUI orders={orders} handleGetFeeds={handleGetFeeds} />;
 };
