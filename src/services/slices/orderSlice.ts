@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
-import { orderBurgerApi } from '../../utils/burger-api';
+import { orderBurgerApi, getOrderByNumberApi } from '../../utils/burger-api';
 import { TOrder } from '../../utils/types';
 
 type OrderState = {
@@ -10,7 +10,7 @@ type OrderState = {
 };
 
 const initialState: OrderState = {
-  orderModalData: null, // ✅
+  orderModalData: null,
   isLoading: false,
   error: null
 };
@@ -27,6 +27,14 @@ export const createOrder = createAsyncThunk<
     return rejectWithValue(err.message ?? 'Ошибка при оформлении заказа');
   }
 });
+
+export const fetchOrderByNumber = createAsyncThunk<TOrder, number>(
+  'order/fetchOrderByNumber',
+  async (number) => {
+    const res = await getOrderByNumberApi(number);
+    return res.orders[0];
+  }
+);
 
 export const orderSlice = createSlice({
   name: 'order',
@@ -53,6 +61,22 @@ export const orderSlice = createSlice({
       .addCase(createOrder.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload ?? 'Ошибка при оформлении заказа';
+      });
+    builder
+      .addCase(fetchOrderByNumber.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(
+        fetchOrderByNumber.fulfilled,
+        (state, action: PayloadAction<TOrder>) => {
+          state.orderModalData = action.payload;
+          state.isLoading = false;
+        }
+      )
+      .addCase(fetchOrderByNumber.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message ?? 'Ошибка при загрузке заказа';
       });
   }
 });

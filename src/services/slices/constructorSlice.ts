@@ -21,7 +21,6 @@ export const constructorSlice = createSlice({
   name: 'burgerConstructor',
   initialState,
   reducers: {
-    
     addIngredient(state, action: PayloadAction<TIngredient>) {
       const ing = action.payload;
       if (ing.type === 'bun') {
@@ -31,14 +30,12 @@ export const constructorSlice = createSlice({
       }
     },
 
-  
     removeIngredient(state, action: PayloadAction<string>) {
       state.ingredients = state.ingredients.filter(
         (i) => i.id !== action.payload
       );
     },
 
-   
     moveIngredientUp(state, action: PayloadAction<number>) {
       const i = action.payload;
       if (i <= 0 || i >= state.ingredients.length) return;
@@ -56,7 +53,6 @@ export const constructorSlice = createSlice({
       ];
     },
 
-    
     resetConstructor(state) {
       state.bun = null;
       state.ingredients = [];
@@ -74,7 +70,7 @@ export const {
 
 export const constructorSliceReducer = constructorSlice.reducer;
 
-export const selectConstructor = (s: RootState) => s.burgerConstructor; 
+export const selectConstructor = (s: RootState) => s.burgerConstructor;
 
 export const selectTotalPrice = createSelector(selectConstructor, (c) => {
   const bun = c.bun ? c.bun.price * 2 : 0;
