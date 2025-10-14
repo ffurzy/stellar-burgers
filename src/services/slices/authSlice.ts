@@ -12,9 +12,9 @@ import {
 
 type AuthState = {
   user: TUser | null;
-  isLoading: boolean; // любой активный запрос auth
-  error: string | null; // последняя ошибка
-  isAuthChecked: boolean; // один раз проверили "кто я?" (важно для защищённых роутов)
+  isLoading: boolean;
+  error: string | null;
+  isAuthChecked: boolean;
 };
 
 const initialState: AuthState = {
@@ -24,17 +24,15 @@ const initialState: AuthState = {
   isAuthChecked: false
 };
 
-// Регистрация
 export const registerUser = createAsyncThunk<
   TUser,
   { name: string; email: string; password: string }
 >('auth/register', async (data) => {
   const res = await registerUserApi(data);
-  // API уже кладёт токены; вернём пользователя
+
   return res.user;
 });
 
-// Логин
 export const loginUser = createAsyncThunk<
   TUser,
   { email: string; password: string }
@@ -43,13 +41,11 @@ export const loginUser = createAsyncThunk<
   return res.user;
 });
 
-// Проверить текущего пользователя (по токенам)
 export const fetchUser = createAsyncThunk<TUser>('auth/fetchUser', async () => {
   const res = await getUserApi();
   return res.user;
 });
 
-// Обновить данные пользователя
 export const updateUser = createAsyncThunk<
   TUser,
   Partial<{ name: string; email: string; password: string }>
@@ -58,39 +54,33 @@ export const updateUser = createAsyncThunk<
   return res.user;
 });
 
-// Выход
 export const logout = createAsyncThunk<void>('auth/logout', async () => {
   await logoutApi();
-  // токены чистятся в burger-api (refresh в localStorage мы там удаляем)
-  // если нужно жёстко — можно дополнительно подчистить здесь
+
   try {
     localStorage.removeItem('refreshToken');
   } catch {}
 });
 
-// ---------- Slice ----------
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // Иногда удобно иметь явный reset ошибок перед сабмитом форм
     clearAuthError(state) {
       state.error = null;
     }
   },
   extraReducers: (builder) => {
-    // helper для pending
     const onPending = (state: AuthState) => {
       state.isLoading = true;
       state.error = null;
     };
-    // helper для rejected
+
     const onRejected = (state: AuthState, action: any) => {
       state.isLoading = false;
       state.error = action.error?.message ?? 'Ошибка запроса';
     };
 
-    // register
     builder.addCase(registerUser.pending, onPending);
     builder.addCase(
       registerUser.fulfilled,
@@ -105,7 +95,6 @@ export const authSlice = createSlice({
       state.isAuthChecked = true;
     });
 
-    // login
     builder.addCase(loginUser.pending, onPending);
     builder.addCase(
       loginUser.fulfilled,
@@ -120,7 +109,6 @@ export const authSlice = createSlice({
       state.isAuthChecked = true;
     });
 
-    // fetchUser (первичная проверка сессии)
     builder.addCase(fetchUser.pending, onPending);
     builder.addCase(
       fetchUser.fulfilled,
@@ -130,15 +118,12 @@ export const authSlice = createSlice({
         state.isAuthChecked = true;
       }
     );
-    builder.addCase(fetchUser.rejected, (state, action) => {
-      // если не авторизованы/токен невалиден — это не «фатал», просто нет пользователя
-      onRejected(state, action);
+    builder.addCase(fetchUser.rejected, (state) => {
       state.user = null;
       state.isLoading = false;
       state.isAuthChecked = true;
     });
 
-    // updateUser
     builder.addCase(updateUser.pending, onPending);
     builder.addCase(
       updateUser.fulfilled,
@@ -149,7 +134,6 @@ export const authSlice = createSlice({
     );
     builder.addCase(updateUser.rejected, onRejected);
 
-    // logout
     builder.addCase(logout.pending, onPending);
     builder.addCase(logout.fulfilled, (state) => {
       state.user = null;
@@ -163,7 +147,6 @@ export const authSlice = createSlice({
 export const { clearAuthError } = authSlice.actions;
 export const authReducer = authSlice.reducer;
 
-// ---------- Селекторы ----------
 export const selectUser = (s: RootState) => s.auth.user;
 export const selectAuthLoading = (s: RootState) => s.auth.isLoading;
 export const selectAuthError = (s: RootState) => s.auth.error;
