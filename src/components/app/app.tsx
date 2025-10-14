@@ -1,12 +1,28 @@
 import { useEffect } from 'react';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import {
+  Routes,
+  Route,
+  useLocation,
+  useNavigate,
+  Navigate
+} from 'react-router-dom';
 import '../../index.css';
 import styles from './app.module.css';
 
 import { AppHeader } from '../app-header';
-import { ConstructorPage, Feed } from '@pages';
+import {
+  ConstructorPage,
+  Feed,
+  Profile,
+  Login,
+  Register,
+  ForgotPassword,
+  ResetPassword,
+  ProfileOrders,
+  NotFound404
+} from '@pages';
 import { Modal } from '@components';
-import { IngredientDetails } from '@components';
+import { IngredientDetails, OrderInfo } from '@components';
 import { Preloader } from '@ui';
 
 import { useDispatch, useSelector } from '../../services/store';
@@ -16,6 +32,12 @@ import {
   selectIngredientsLoadedOnce,
   selectIngredientsError
 } from '../../services/slices/ingredientsSlice';
+
+import {
+  fetchUser,
+  selectIsAuthChecked,
+  selectIsAuthenticated
+} from '../../services/slices/authSlice';
 
 const App = () => {
   const dispatch = useDispatch();
@@ -27,6 +49,15 @@ const App = () => {
   const isLoading = useSelector(selectIngredientsLoading);
   const loadedOnce = useSelector(selectIngredientsLoadedOnce);
   const error = useSelector(selectIngredientsError);
+
+  const isAuthChecked = useSelector(selectIsAuthChecked);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+
+  useEffect(() => {
+    if (!isAuthChecked) {
+      dispatch(fetchUser());
+    }
+  }, [dispatch, isAuthChecked]);
 
   useEffect(() => {
     if (!loadedOnce) {
@@ -57,6 +88,15 @@ const App = () => {
     );
   }
 
+  if (!isAuthChecked) {
+    return (
+      <div className={styles.app}>
+        <AppHeader />
+        <Preloader />
+      </div>
+    );
+  }
+
   return (
     <div className={styles.app}>
       <div className={styles.headerWrap}>
@@ -65,8 +105,47 @@ const App = () => {
 
       <Routes location={background || location}>
         <Route path='/' element={<ConstructorPage />} />
-        <Route path='/ingredients/:id' element={<IngredientDetails />} />
         <Route path='/feed' element={<Feed />} />
+        <Route path='/ingredients/:id' element={<IngredientDetails />} />
+        <Route
+          path='/profile'
+          element={
+            isAuthenticated ? <Profile /> : <Navigate to='/login' replace />
+          }
+        />
+        <Route
+          path='/profile/orders'
+          element={
+            isAuthenticated ? (
+              <ProfileOrders />
+            ) : (
+              <Navigate to='/login' replace />
+            )
+          }
+        />
+
+        <Route
+          path='/login'
+          element={isAuthenticated ? <Navigate to='/' replace /> : <Login />}
+        />
+        <Route
+          path='/register'
+          element={isAuthenticated ? <Navigate to='/' replace /> : <Register />}
+        />
+        <Route
+          path='/forgot-password'
+          element={
+            isAuthenticated ? <Navigate to='/' replace /> : <ForgotPassword />
+          }
+        />
+        <Route
+          path='/reset-password'
+          element={
+            isAuthenticated ? <Navigate to='/' replace /> : <ResetPassword />
+          }
+        />
+
+        <Route path='*' element={<NotFound404 />} />
       </Routes>
 
       {background && (
@@ -76,6 +155,22 @@ const App = () => {
             element={
               <Modal title='Детали ингредиента' onClose={() => navigate(-1)}>
                 <IngredientDetails />
+              </Modal>
+            }
+          />
+          <Route
+            path='/feed/:number'
+            element={
+              <Modal title='Информация о заказе' onClose={() => navigate(-1)}>
+                <OrderInfo />
+              </Modal>
+            }
+          />
+          <Route
+            path='/profile/orders/:number'
+            element={
+              <Modal title='Информация о заказе' onClose={() => navigate(-1)}>
+                <OrderInfo />
               </Modal>
             }
           />
