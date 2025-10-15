@@ -1,7 +1,6 @@
-import { FC, memo } from 'react';
+import { FC, memo, useCallback } from 'react';
 import { BurgerConstructorElementUI } from '@ui';
 import { BurgerConstructorElementProps } from './type';
-
 import { useDispatch } from '../../services/store';
 import {
   moveIngredientUp,
@@ -12,30 +11,25 @@ import {
 export const BurgerConstructorElement: FC<BurgerConstructorElementProps> = memo(
   ({ ingredient, index, totalItems }) => {
     const dispatch = useDispatch();
-
-    // вверх/вниз. UI-гард от выхода за границы (редьюсер всё равно должен держать инвариант)
-    const handleMoveUp = () => {
-      if (index > 0) dispatch(moveIngredientUp(index));
-    };
-
-    const handleMoveDown = () => {
-      if (index < totalItems - 1) dispatch(moveIngredientDown(index));
-    };
-
-    const handleClose = () => {
-      // у начинок есть id; у булки — нет, её удаляем только заменой
-      if (ingredient.id) {
-        dispatch(removeIngredient(ingredient.id));
-      }
-    };
+    const handleMove = useCallback(
+      (direction: 'up' | 'down') => {
+        if (direction === 'up' && index > 0) dispatch(moveIngredientUp(index));
+        if (direction === 'down' && index < totalItems - 1)
+          dispatch(moveIngredientDown(index));
+      },
+      [dispatch, index, totalItems]
+    );
+    const handleClose = useCallback(() => {
+      if (ingredient.id) dispatch(removeIngredient(ingredient.id));
+    }, [dispatch, ingredient.id]);
 
     return (
       <BurgerConstructorElementUI
         ingredient={ingredient}
         index={index}
         totalItems={totalItems}
-        handleMoveUp={handleMoveUp}
-        handleMoveDown={handleMoveDown}
+        handleMoveUp={() => handleMove('up')}
+        handleMoveDown={() => handleMove('down')}
         handleClose={handleClose}
       />
     );
