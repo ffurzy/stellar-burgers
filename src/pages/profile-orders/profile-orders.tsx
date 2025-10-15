@@ -2,43 +2,50 @@ import { FC, useEffect } from 'react';
 import { useDispatch, useSelector } from '../../services/store';
 import { ProfileOrdersUI } from '@ui-pages';
 import {
-  setFeedData,
-  setFeedError,
-  selectFeedOrders
+  selectFeedOrders,
+  selectFeedError
 } from '../../services/slices/feedSlice';
-import { getCookie } from '../../utils/cookie';
-import { TOrder, TOrdersData } from '@utils-types';
+import { TOrder } from '@utils-types';
 
-const WS_URL = 'wss://norma.nomoreparties.space/orders';
+// подключение WebSocket
+const WS_URL = `${process.env.BURGER_API_WS_URL}/orders`;
 
 export const ProfileOrders: FC = () => {
   const dispatch = useDispatch();
+
+  // данные из стора
   const orders: TOrder[] = useSelector(selectFeedOrders);
+  const error = useSelector(selectFeedError);
 
   useEffect(() => {
-    const accessToken = getCookie('accessToken')?.replace('Bearer ', '');
-    const socket = new WebSocket(`${WS_URL}?token=${accessToken}`);
+    const accessToken = localStorage
+      .getItem('accessToken')
+      ?.replace('Bearer ', '');
+    const ws = new WebSocket(`${WS_URL}?token=${accessToken}`);
 
-    socket.onopen = () => {
-      console.log('ProfileOrders WebSocket connected');
-    };
+    ws.onopen = () => console.log('ProfileOrders WebSocket connected ');
+    ws.onerror = (err) => console.error('WebSocket error ', err);
 
-    socket.onmessage = (event) => {
-      const data: TOrdersData = JSON.parse(event.data);
-      if (data?.orders) {
-        dispatch(setFeedData(data));
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data?.success) {
+        dispatch({
+          type: 'feed/setFeedData',
+          payload: {
+            orders: data.orders,
+            total: data.total,
+            totalToday: data.totalToday
+          }
+        });
       }
     };
-    socket.onerror = () => {
-      dispatch(setFeedError('WebSocket error'));
-    };
 
-    socket.onclose = () => {
-      console.log('ProfileOrders WebSocket disconnected');
-    };
+    ws.onclose = () => console.log('ProfileOrders WebSocket disconnected ');
 
-    return () => socket.close();
+    return () => ws.close();
   }, [dispatch]);
 
+  if (error) return <div>Ошибка загрузки заказов: {error}</div>;
   return <ProfileOrdersUI orders={orders} />;
 };
