@@ -6,7 +6,6 @@ import { Preloader } from '@ui';
 
 export const Feed: FC = () => {
   const dispatch = useDispatch();
-
   const { orders, isLoading, error } = useSelector((state) => state.feed);
 
   useEffect(() => {
