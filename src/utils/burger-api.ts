@@ -1,4 +1,4 @@
-import { setCookie, getCookie } from './cookie';
+import { setCookie, getCookie, deleteCookie } from './cookie';
 import { TIngredient, TOrder, TOrdersData, TUser } from './types';
 
 const URL = process.env.BURGER_API_URL;
@@ -153,7 +153,11 @@ export const registerUserApi = (data: TRegisterData) =>
   })
     .then((res) => checkResponse<TAuthResponse>(res))
     .then((data) => {
-      if (data?.success) return data;
+      if (data?.success) {
+        localStorage.setItem('refreshToken', data.refreshToken);
+        setCookie('accessToken', data.accessToken);
+        return data;
+      }
       return Promise.reject(data);
     });
 
@@ -172,7 +176,11 @@ export const loginUserApi = (data: TLoginData) =>
   })
     .then((res) => checkResponse<TAuthResponse>(res))
     .then((data) => {
-      if (data?.success) return data;
+      if (data?.success) {
+        localStorage.setItem('refreshToken', data.refreshToken);
+        setCookie('accessToken', data.accessToken);
+        return data;
+      }
       return Promise.reject(data);
     });
 
@@ -223,13 +231,23 @@ export const updateUserApi = (user: Partial<TRegisterData>) =>
     body: JSON.stringify(user)
   });
 
-export const logoutApi = () =>
-  fetch(`${URL}/auth/logout`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json;charset=utf-8'
-    },
-    body: JSON.stringify({
-      token: localStorage.getItem('refreshToken')
-    })
-  }).then((res) => checkResponse<TServerResponse<{}>>(res));
+export const logoutApi = async () => {
+  try {
+    const res = await fetch(`${URL}/auth/logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json;charset=utf-8' },
+      body: JSON.stringify({
+        token: localStorage.getItem('refreshToken')
+      })
+    });
+
+    await checkResponse<TServerResponse<{}>>(res);
+
+    deleteCookie('accessToken');
+    localStorage.removeItem('refreshToken');
+  } catch (err) {
+    console.error('Logout error:', err);
+    deleteCookie('accessToken');
+    localStorage.removeItem('refreshToken');
+  }
+};
