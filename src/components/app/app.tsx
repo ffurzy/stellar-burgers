@@ -6,10 +6,10 @@ import {
   useNavigate,
   Navigate
 } from 'react-router-dom';
-import '../../index.css';
-import styles from './app.module.css';
-
+import { useDispatch, useSelector } from '../../services/store';
 import { AppHeader } from '../app-header';
+import { Modal, IngredientDetails, OrderInfo } from '@components';
+
 import {
   ConstructorPage,
   Feed,
@@ -21,49 +21,37 @@ import {
   ProfileOrders,
   NotFound404
 } from '@pages';
-import { Modal } from '@components';
-import { IngredientDetails, OrderInfo } from '@components';
-import { Preloader } from '@ui';
-
-import { useDispatch, useSelector } from '../../services/store';
 import {
   fetchIngredients,
   selectIngredientsLoading,
   selectIngredientsLoadedOnce,
   selectIngredientsError
 } from '../../services/slices/ingredientsSlice';
-
 import {
   fetchUser,
   selectIsAuthChecked,
   selectIsAuthenticated
 } from '../../services/slices/authSlice';
+import { Preloader } from '@ui';
+
+import '../../index.css';
+import styles from './app.module.css';
 
 const App = () => {
   const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
-
   const background = (location.state as { background?: Location })?.background;
-
   const isLoading = useSelector(selectIngredientsLoading);
   const loadedOnce = useSelector(selectIngredientsLoadedOnce);
   const error = useSelector(selectIngredientsError);
-
   const isAuthChecked = useSelector(selectIsAuthChecked);
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   useEffect(() => {
-    if (!isAuthChecked) {
-      dispatch(fetchUser());
-    }
-  }, [dispatch, isAuthChecked]);
-
-  useEffect(() => {
-    if (!loadedOnce) {
-      dispatch(fetchIngredients());
-    }
-  }, [dispatch, loadedOnce]);
+    if (!isAuthChecked) dispatch(fetchUser());
+    if (!loadedOnce) dispatch(fetchIngredients());
+  }, [dispatch, isAuthChecked, loadedOnce]);
 
   if (isLoading && !loadedOnce) {
     return (
@@ -102,7 +90,6 @@ const App = () => {
       <div className={styles.headerWrap}>
         <AppHeader />
       </div>
-
       <Routes location={background || location}>
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
@@ -123,7 +110,6 @@ const App = () => {
             )
           }
         />
-
         <Route
           path='/login'
           element={isAuthenticated ? <Navigate to='/' replace /> : <Login />}

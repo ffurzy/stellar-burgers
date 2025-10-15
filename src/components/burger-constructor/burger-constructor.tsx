@@ -14,7 +14,6 @@ import type { TConstructorIngredient } from '@utils-types';
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const bun = useSelector(selectConstructorBun);
   const ingredients = useSelector(
     selectConstructorIngredients
@@ -30,12 +29,10 @@ export const BurgerConstructor: FC = () => {
 
   const handleOrderClick = async () => {
     if (!bun || ingredients.length === 0 || orderRequest) return;
-
     if (!user) {
       navigate('/login', { state: { from: '/' } });
       return;
     }
-
     try {
       const ingredientIds = [
         bun._id,
