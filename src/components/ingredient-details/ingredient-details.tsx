@@ -1,4 +1,3 @@
-// src/components/ingredient-details/ingredient-details.tsx
 import { FC } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector } from '../../services/store';

@@ -12,7 +12,6 @@ import {
 } from '../../services/slices/authSlice';
 
 export const Profile: FC = () => {
-  /** TODO: взять переменную из стора */
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();

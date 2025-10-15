@@ -10,6 +10,7 @@ import { constructorSliceReducer } from './slices/constructorSlice';
 import { feedReducer } from './slices/feedSlice';
 import { authReducer } from './slices/authSlice';
 import { orderReducer } from './slices/orderSlice';
+import { profileOrdersReducer } from './slices/profileOrdersSlice';
 
 export const store = configureStore({
   reducer: {
@@ -17,7 +18,8 @@ export const store = configureStore({
     burgerConstructor: constructorSliceReducer,
     feed: feedReducer,
     auth: authReducer,
-    order: orderReducer
+    order: orderReducer,
+    profileOrders: profileOrdersReducer
   },
   devTools: process.env.NODE_ENV !== 'production'
 });

@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
 import type { TUser } from '../../utils/types';
+import { setCookie, deleteCookie } from '../../utils/cookie';
 
 import {
   registerUserApi,
@@ -29,7 +30,8 @@ export const registerUser = createAsyncThunk<
   { name: string; email: string; password: string }
 >('auth/register', async (data) => {
   const res = await registerUserApi(data);
-
+  setCookie('accessToken', res.accessToken);
+  localStorage.setItem('refreshToken', res.refreshToken);
   return res.user;
 });
 
@@ -38,6 +40,8 @@ export const loginUser = createAsyncThunk<
   { email: string; password: string }
 >('auth/login', async (data) => {
   const res = await loginUserApi(data);
+  setCookie('accessToken', res.accessToken);
+  localStorage.setItem('refreshToken', res.refreshToken);
   return res.user;
 });
 
@@ -56,10 +60,8 @@ export const updateUser = createAsyncThunk<
 
 export const logout = createAsyncThunk<void>('auth/logout', async () => {
   await logoutApi();
-
-  try {
-    localStorage.removeItem('refreshToken');
-  } catch {}
+  deleteCookie('accessToken');
+  localStorage.removeItem('refreshToken');
 });
 
 export const authSlice = createSlice({
